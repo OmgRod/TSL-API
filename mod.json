@@ -1,0 +1,20 @@
+{
+	"geode": "4.7.1",
+	"gd": {
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
+	},
+	"id": "omgrod.tsl_api",
+	"name": "TSL API",
+	"version": "v1.0.0",
+	"developer": "OmgRod",
+	"description": "An API for the \"Shitty List Template\". Intended for list integration mods.",
+	"early-load": true,
+	"api": {
+		"include": [
+			"include/*.hpp"
+		]
+	}
+}
