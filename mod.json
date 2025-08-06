@@ -6,7 +6,7 @@
 		"mac": "2.2074",
 		"ios": "2.2074"
 	},
-	"id": "omgrod.tsl_api",
+	"id": "omgrod.tsl-api",
 	"name": "TSL API",
 	"version": "v1.0.0",
 	"developer": "OmgRod",
@@ -15,6 +15,18 @@
 	"api": {
 		"include": [
 			"include/*.hpp"
+		]
+	},
+	"dependencies": {
+		"geode.node-ids": {
+			"importance": "required",
+			"version": ">=1.21.1"
+		}
+	},
+	"tags": ["content", "customization", "developer", "interface", "online", "universal", "utility", "api"],
+	"resources": {
+		"sprites": [
+			"res/*.png"
 		]
 	}
 }
