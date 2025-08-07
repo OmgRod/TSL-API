@@ -118,7 +118,7 @@ bool TSLListLayer::init(tsl::List* list) {
     m_pageLabel->setScale(0.56f);
     addChild(m_pageLabel);
 
-    m_list = GJListLayer::create(nullptr, m_listData->m_name.c_str(), {191, 114, 62, 255}, 356.f, 220.f, 0);
+    m_list = GJListLayer::create(nullptr, m_listData->m_settings.name.c_str(), {191, 114, 62, 255}, 356.f, 220.f, 0);
     m_list->setPosition(winSize / 2 - m_list->getScaledContentSize() / 2 - CCPoint(0,5));
     addChild(m_list);
 
