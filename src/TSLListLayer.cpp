@@ -99,7 +99,7 @@ bool TSLListLayer::init(tsl::List* list) {
 
     menu->addChild(m_prevButton);
     
-    if (m_listData->m_settings.staffInfo && m_listData->m_settings.staff) {
+    if (m_listData->m_settings->staffInfo && m_listData->m_settings->staff) {
         std::string editors = m_listData->generateStaffList();
 
         spr = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
@@ -118,7 +118,7 @@ bool TSLListLayer::init(tsl::List* list) {
     m_pageLabel->setScale(0.56f);
     addChild(m_pageLabel);
 
-    m_list = GJListLayer::create(nullptr, m_listData->m_settings.name.c_str(), {191, 114, 62, 255}, 356.f, 220.f, 0);
+    m_list = GJListLayer::create(nullptr, m_listData->m_settings->name.c_str(), {191, 114, 62, 255}, 356.f, 220.f, 0);
     m_list->setPosition(winSize / 2 - m_list->getScaledContentSize() / 2 - CCPoint(0,5));
     addChild(m_list);
 
@@ -163,7 +163,7 @@ bool TSLListLayer::init(tsl::List* list) {
     );
     buttonIcon->setScale(1.175f);
 
-    if (m_listData->m_settings.weekly) {
+    if (m_listData->m_settings->weekly) {
         CCMenuItemSpriteExtra* weeklyButton = CCMenuItemSpriteExtra::create(buttonIcon, this, menu_selector(TSLListLayer::onWeekly));
         weeklyButton->setPosition({winSize.width - (weeklyButton->getContentWidth() / 2) - 10, winSize.height - 225});
         
@@ -205,7 +205,7 @@ void TSLListLayer::onBack(CCObject*) {
 }
 
 int TSLListLayer::getLastPage() {
-    return (m_listData->getLevelCount() + m_listData->m_settings.levelsPerPage) / m_listData->m_settings.levelsPerPage;
+    return (m_listData->getLevelCount() + m_listData->m_settings->levelsPerPage) / m_listData->m_settings->levelsPerPage;
 }
 
 void TSLListLayer::onInfo(CCObject*) {
@@ -213,7 +213,7 @@ void TSLListLayer::onInfo(CCObject*) {
 }
 
 void TSLListLayer::onWeekly(CCObject*) {
-    if (m_listData->m_settings.weekly) WeeklyPopup::create(m_listData)->show();
+    if (m_listData->m_settings->weekly) WeeklyPopup::create(m_listData)->show();
 }
 
 void TSLListLayer::onRefresh(CCObject*) {
@@ -227,7 +227,7 @@ void TSLListLayer::onRefresh(CCObject*) {
 
     m_listData->clearAllCache();
 
-    if (m_listData->m_settings.weekly) tsl::Request::loadWeekly(true, m_listData);
+    if (m_listData->m_settings->weekly) tsl::Request::loadWeekly(true, m_listData);
 
     goToPage(m_currentPage);
 
@@ -366,10 +366,10 @@ void TSLListLayer::onPrev(CCObject*) {
 }
 
 void TSLListLayer::updatePageLabels() {
-    int pageMax = m_currentPage * m_listData->m_settings.levelsPerPage + m_listData->m_settings.levelsPerPage;
+    int pageMax = m_currentPage * m_listData->m_settings->levelsPerPage + m_listData->m_settings->levelsPerPage;
     m_pageLabel->setString(fmt::format(
         "{} to {} of {}",
-        m_currentPage * m_listData->m_settings.levelsPerPage + 1,
+        m_currentPage * m_listData->m_settings->levelsPerPage + 1,
         pageMax > m_listData->getLevelCount() ? m_listData->getLevelCount() : pageMax,
         m_listData->getLevelCount()
     ).c_str());

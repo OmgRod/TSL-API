@@ -95,11 +95,11 @@ namespace tsl {
         std::unordered_map<int, CCArray*> m_cachedPages;
         int m_tempCount = 0;
     public:
-        ListSettings m_settings;
+        ListSettings* m_settings;
 
         static inline std::vector<List*> s_registeredLists;
 
-        static List* create(ListSettings settings) {
+        static List* create(ListSettings* settings) {
             List* list = new List();
             list->m_settings = settings;
             s_registeredLists.push_back(list);
@@ -111,17 +111,17 @@ namespace tsl {
         }
 
         const std::string& getName() const {
-            return m_settings.name;
+            return m_settings->name;
         }
 
         const std::string& getEndpoint() const {
-            return m_settings.endpoint;
+            return m_settings->endpoint;
         }
 
         std::string generateStaffList() {
             std::unordered_map<tsl::StaffRole, std::vector<tsl::Staff*>> grouped;
 
-            for (auto member : m_settings.staff->m_members) {
+            for (auto member : m_settings->staff->m_members) {
                 grouped[member->m_role].push_back(member);
             }
 
@@ -170,10 +170,10 @@ namespace tsl {
             m_cachedWeekly = level;
         }
         void setLocalWeekly(int id) {
-            Mod::get()->setSavedValue(fmt::format("local_weekly-{}", m_settings.listID), id);
+            Mod::get()->setSavedValue(fmt::format("local_weekly-{}", m_settings->listID), id);
         }
         int getLocalWeekly() {
-            return Mod::get()->getSavedValue<int64_t>(fmt::format("local_weekly-{}", m_settings.listID));
+            return Mod::get()->getSavedValue<int64_t>(fmt::format("local_weekly-{}", m_settings->listID));
         }
         const std::vector<std::string>& getLevelNames() {
             return m_levelNames;
@@ -256,7 +256,7 @@ namespace tsl {
             auto req = web::WebRequest();
             req.header("Content-Type", "application/json");
 
-            req.get(fmt::format("{}{}", list->m_settings.endpoint, "_WEEKLY")).listen([shouldUpdate, list](web::WebResponse* e) {
+            req.get(fmt::format("{}{}", list->m_settings->endpoint, "_WEEKLY")).listen([shouldUpdate, list](web::WebResponse* e) {
                 auto res = e->string();
 
                 if (res.isErr())
@@ -294,7 +294,7 @@ namespace tsl {
 
             req.header("Content-Type", "application/json");
 
-            req.get(fmt::format("{}{}.json", list->m_settings.endpoint, "_list")).listen([&] (web::WebResponse* e) {
+            req.get(fmt::format("{}{}.json", list->m_settings->endpoint, "_list")).listen([&] (web::WebResponse* e) {
                 auto res = e->json();
                 TSLListLayer* layer = list->getLayer();
 
@@ -325,7 +325,7 @@ namespace tsl {
 
         void loadPageLevels(int page, tsl::List* list) {
             std::vector<std::string> names = list->getLevelNames();
-            int levelsPerPage = list->m_settings.levelsPerPage;
+            int levelsPerPage = list->m_settings->levelsPerPage;
 
             list->setCount(0);
 
@@ -352,7 +352,7 @@ namespace tsl {
 
                 replace(name, ' ', "%20");
 
-                req.get(fmt::format("{}{}.json", list->m_settings.endpoint, name)).listen([&](web::WebResponse* e) {
+                req.get(fmt::format("{}{}.json", list->m_settings->endpoint, name)).listen([&](web::WebResponse* e) {
                     auto res = e->json();
                     TSLListLayer* layer = list->getLayer();
 
@@ -384,7 +384,7 @@ namespace tsl {
 
         std::string getLevelsString(int page, tsl::List* list) {
             std::string str;
-            int levelsPerPage = list->m_settings.levelsPerPage;
+            int levelsPerPage = list->m_settings->levelsPerPage;
             log::info("getLevelsString called. Page: {}", page);
 
             // Log the size of the level names in Cache
