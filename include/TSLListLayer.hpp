@@ -2,7 +2,6 @@
 
 #include <Geode/Geode.hpp>
 #include <TSL.hpp>
-#include "DoubleArrow.hpp"
 
 using namespace geode::prelude;
 

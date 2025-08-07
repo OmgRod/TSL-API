@@ -4,7 +4,7 @@
 
 using namespace geode::prelude;
 
-class $modify(MyLevelSearchLayer, LevelSearchLayer) {
+class $modify(LevelSearchLayerModified, LevelSearchLayer) {
 public:
     bool init(int p0) {
         if (!LevelSearchLayer::init(p0)) return false;
@@ -20,7 +20,7 @@ public:
             auto button = CCMenuItemSpriteExtra::create(
                 sprite,
                 this,
-                menu_selector(MyLevelSearchLayer::onTSL)
+                menu_selector(LevelSearchLayerModified::onTSL)
             );
             menu->addChild(button);
             menu->updateLayout();

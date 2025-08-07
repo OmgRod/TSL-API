@@ -1,11 +1,14 @@
 #include <TSL.hpp>
-#include "TSLListLayer.hpp"
+#include <TSLListLayer.hpp>
+#include <WeeklyPopup.hpp>
 #include "InfoPopup.hpp"
+#include "DoubleArrow.hpp"
 
 bool TSLListLayer::init(tsl::List* list) {
     if (!CCLayer::init()) return false;
 
     m_listData = list;
+    list->setLayer(this);
 
     setKeypadEnabled(true);
     cocos::handleTouchPriority(this, true);
@@ -160,10 +163,12 @@ bool TSLListLayer::init(tsl::List* list) {
     );
     buttonIcon->setScale(1.175f);
 
-    CCMenuItemSpriteExtra* weeklyButton = CCMenuItemSpriteExtra::create(buttonIcon, this, menu_selector(TSLListLayer::onWeekly));
-    weeklyButton->setPosition({winSize.width - (weeklyButton->getContentWidth() / 2) - 10, winSize.height - 225});
-    
-    menu->addChild(weeklyButton);
+    if (m_listData->m_settings.weekly) {
+        CCMenuItemSpriteExtra* weeklyButton = CCMenuItemSpriteExtra::create(buttonIcon, this, menu_selector(TSLListLayer::onWeekly));
+        weeklyButton->setPosition({winSize.width - (weeklyButton->getContentWidth() / 2) - 10, winSize.height - 225});
+        
+        menu->addChild(weeklyButton);
+    }
 
     showLoading();
 
@@ -200,11 +205,7 @@ void TSLListLayer::onBack(CCObject*) {
 }
 
 int TSLListLayer::getLastPage() {
-    return (Cache::getLevelCount() + m_listData->m_settings.levelsPerPage) / m_listData->m_settings.levelsPerPage;
-}
-
-void TSLListLayer::onBack(CCObject*) {
-    keyBackClicked();
+    return (m_listData->getLevelCount() + m_listData->m_settings.levelsPerPage) / m_listData->m_settings.levelsPerPage;
 }
 
 void TSLListLayer::onInfo(CCObject*) {
@@ -212,7 +213,7 @@ void TSLListLayer::onInfo(CCObject*) {
 }
 
 void TSLListLayer::onWeekly(CCObject*) {
-    WeeklyPopup::create()->show();
+    if (m_listData->m_settings.weekly) WeeklyPopup::create(m_listData)->show();
 }
 
 void TSLListLayer::onRefresh(CCObject*) {
@@ -224,10 +225,9 @@ void TSLListLayer::onRefresh(CCObject*) {
     m_lastRefresh = currentTime;
     m_didRefresh = true;
 
-    Cache::clearAllCache();
+    m_listData->clearAllCache();
 
-    Request::loadEditors(true);
-    Request::loadWeekly();
+    if (m_listData->m_settings.weekly) tsl::Request::loadWeekly(true, m_listData);
 
     goToPage(m_currentPage);
 
@@ -237,10 +237,11 @@ void TSLListLayer::onRefresh(CCObject*) {
 }
 
 void TSLListLayer::goToPage(int page) {
-    if (CCArray* cachedPage = Cache::getCachedPage(page)) {
+    if (CCArray* cachedPage = m_listData->getCachedPage(page)) {
         showPage(cachedPage);
     } else {
-        Request::loadPage(page);
+        tsl::Request req;
+        req.loadPage(page, m_listData);
     }
 }
 
@@ -254,7 +255,7 @@ void TSLListLayer::showPage(cocos2d::CCArray* levels) {
             if (!typeinfo_cast<LevelCell*>(cell)) continue;
 
             int top = 0;
-            top = abs(Utils::getTopForLevelId(cell->m_level->m_levelID.value()));
+            top = abs(m_listData->getTopForLevelId(cell->m_level->m_levelID.value()));
 
             std::string topStr = std::to_string(top);
 
@@ -332,7 +333,7 @@ void TSLListLayer::loadPage(const std::string& str) {
 }
 
 void TSLListLayer::loadLevelsFinished(cocos2d::CCArray* levels, char const*, int) {
-    Cache::setCachedPage(m_currentPage, levels);
+    m_listData->setCachedPage(m_currentPage, levels);
     showPage(levels);
 }
 
@@ -369,8 +370,8 @@ void TSLListLayer::updatePageLabels() {
     m_pageLabel->setString(fmt::format(
         "{} to {} of {}",
         m_currentPage * m_listData->m_settings.levelsPerPage + 1,
-        pageMax > Cache::getLevelCount() ? Cache::getLevelCount() : pageMax,
-        Cache::getLevelCount()
+        pageMax > m_listData->getLevelCount() ? m_listData->getLevelCount() : pageMax,
+        m_listData->getLevelCount()
     ).c_str());
 
     m_pageButtonLabel->setString(std::to_string(m_currentPage + 1).c_str());
