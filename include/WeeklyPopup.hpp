@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
-#include <TSL.hpp>
+#include "TSL.hpp"
 
 using namespace geode::prelude;
 

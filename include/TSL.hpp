@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
-#include <WeeklyPopup.hpp>
-#include <TSLListLayer.hpp>
+#include "WeeklyPopup.hpp"
+#include "TSLListLayer.hpp"
 
 using namespace geode::prelude;
 
@@ -81,8 +81,6 @@ namespace tsl {
         std::string endpoint = "https://raw.githubusercontent.com/ExampleName/ExampleRepo/refs/heads/main/data/";
         Mod* mod;
         int levelsPerPage = 10;
-        bool classic = true;
-        bool platformer = false;
         bool weekly = false;
         bool staffInfo = true;
         StaffTeam* staff = StaffTeam::create();
@@ -97,8 +95,6 @@ namespace tsl {
         std::unordered_map<int, CCArray*> m_cachedPages;
         int m_tempCount = 0;
     public:
-        std::string m_name;
-        std::string m_endpoint;
         ListSettings m_settings;
 
         static inline std::vector<List*> s_registeredLists;
