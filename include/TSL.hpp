@@ -207,13 +207,15 @@ namespace tsl {
         }
         std::string getRemainingTime() {
             time_t now = time(nullptr);
-            tm* tm_now = localtime(&now);
+            tm tm_now;
+            localtime_s(&tm_now, &now);
 
-            int days_until_sunday = (7 - tm_now->tm_wday) % 7;
+
+            int days_until_sunday = (7 - tm_now.tm_wday) % 7;
             if (days_until_sunday == 0)
                 days_until_sunday = 7;
 
-            tm target_tm = *tm_now;
+            tm target_tm = tm_now;
             target_tm.tm_hour = 0;
             target_tm.tm_min = 0;
             target_tm.tm_sec = 0;
