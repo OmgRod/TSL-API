@@ -13,10 +13,14 @@ bool TSLBrowserLayer::init() {
     background->setColor({ 50, 50, 50 });
     addChild(background);
 
-    addBackButton(
+    auto menu = CCMenu::create();
+
+    auto backBtn = addBackButton(
         CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png"),
         BackButtonStyle::Green
     );
+
+    menu->addChild(backBtn);
 
     auto logo = CCSprite::create("listsLogo.png"_spr);
     logo->setPosition({ winSize.width / 2, winSize.height * 0.9f });
