@@ -14,6 +14,7 @@ bool TSLBrowserLayer::init() {
     addChild(background);
 
     auto menu = CCMenu::create();
+    addChild(menu);
 
     auto backBtn = addBackButton(
         CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png"),
