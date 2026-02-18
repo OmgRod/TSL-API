@@ -6,7 +6,7 @@
 #include "TSLListLayer.hpp"
 
 using namespace geode::prelude;
-
+using namespace std::chrono;
 namespace tsl {
     enum StaffRole {
         Owner = 0,
@@ -207,43 +207,43 @@ namespace tsl {
             m_levelNames = names;
         }
         std::string getRemainingTime() {
-            time_t now = time(nullptr);
-            tm tm_now;
-            localtime_s(&tm_now, &now);
-
+            auto now = system_clock::now();
+            std::time_t now_time_t = system_clock::to_time_t(now);
+            std::tm tm_now;
+            #ifdef _WIN32
+            localtime_s(&tm_now, &now_time_t);
+            #else
+            localtime_r(&now_time_t, &tm_now);
+            #endif
 
             int days_until_sunday = (7 - tm_now.tm_wday) % 7;
             if (days_until_sunday == 0)
                 days_until_sunday = 7;
 
-            tm target_tm = tm_now;
-            target_tm.tm_hour = 0;
-            target_tm.tm_min = 0;
-            target_tm.tm_sec = 0;
-            target_tm.tm_mday += days_until_sunday;
-            mktime(&target_tm);
+            // Set tm to next Sunday at 00:00:00
+            std::tm tm_sunday = tm_now;
+            tm_sunday.tm_mday += days_until_sunday;
+            tm_sunday.tm_hour = 0;
+            tm_sunday.tm_min = 0;
+            tm_sunday.tm_sec = 0;
+            std::time_t sunday_midnight = mktime(&tm_sunday);
 
-            time_t target_time = mktime(&target_tm);
-            double diff_seconds = difftime(target_time, now);
+            double diff_seconds = difftime(sunday_midnight, now_time_t);
 
-            int hours = diff_seconds / 3600;
+            int hours_left = static_cast<int>(diff_seconds) / 3600;
             int remaining = static_cast<int>(diff_seconds) % 3600;
             int minutes = remaining / 60;
             int seconds = remaining % 60;
 
-            std::string ret;
-
-            if (hours >= 24) {
-                int days = hours / 24;
-                ret = fmt::format("{}day{} {}h", days, days > 1 ? "s" : "", hours % 24);
-            } else if (hours > 0)
-                ret = fmt::format("{}h {}min", hours, minutes);
+            if (hours_left >= 24) {
+                int days = hours_left / 24;
+                return fmt::format("{}day{} {}h", days, days > 1 ? "s" : "", hours_left % 24);
+            } else if (hours_left > 0)
+                return fmt::format("{}h {}min", hours_left, minutes);
             else if (minutes > 0)
-                ret = fmt::format("{}m {}sec", minutes, seconds);
+                return fmt::format("{}m {}sec", minutes, seconds);
             else
-                ret = fmt::format("{}sec", seconds);
-            
-            return ret;
+                return fmt::format("{}sec", seconds);
         }
         int getTopForLevelId(int id) {
             for (const auto& pair : getLevelIds())
