@@ -220,7 +220,6 @@ namespace tsl {
             if (days_until_sunday == 0)
                 days_until_sunday = 7;
 
-            // Set tm to next Sunday at 00:00:00
             std::tm tm_sunday = tm_now;
             tm_sunday.tm_mday += days_until_sunday;
             tm_sunday.tm_hour = 0;

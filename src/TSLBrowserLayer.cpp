@@ -13,15 +13,10 @@ bool TSLBrowserLayer::init() {
     background->setColor({ 50, 50, 50 });
     addChild(background);
 
-    auto backSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
-    auto backBtn = CCMenuItemSpriteExtra::create(backSpr, this, menu_selector(TSLBrowserLayer::onBack));
-    backBtn->setSizeMult(1.6f);
-
-    auto backMenu = CCMenu::create(backBtn, 0);
-    addChild(backMenu, 1);
-    backMenu->setPosition({ director->getScreenLeft() + 25.f, director->getScreenTop() - 22.f });
-
-    if(PlatformToolbox::isControllerConnected()) GameToolbox::addBackButton(this, backBtn);
+    addBackButton(
+        CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png"),
+        BackButtonStyle::Green
+    );
 
     auto logo = CCSprite::create("listsLogo.png"_spr);
     logo->setPosition({ winSize.width / 2, winSize.height * 0.9f });
