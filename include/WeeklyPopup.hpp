@@ -39,6 +39,6 @@ private:
     void hideError();
     void updateTime();
     void onDiscard(CCObject*);
-    virtual void loadLevelsFinished(cocos2d::CCArray* levels, char const*, int) override;
+    virtual void loadLevelsFinished(CCArray* levels, char const*, int) override;
     virtual void loadLevelsFailed(char const*, int) override;
 };

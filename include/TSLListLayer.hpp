@@ -42,7 +42,7 @@ private:
     void hideLoading();
     void updatePageLabels();
     int getLastPage();
-    virtual void loadLevelsFinished(cocos2d::CCArray* levels, char const*, int) override;
+    virtual void loadLevelsFinished(CCArray* levels, char const*, int) override;
     virtual void loadLevelsFailed(char const*, int) override;
     virtual void setIDPopupClosed(SetIDPopup* popup, int id) override;
 public:

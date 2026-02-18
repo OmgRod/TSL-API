@@ -2,11 +2,13 @@
 
 #include <Geode/Geode.hpp>
 #include <Geode/utils/web.hpp>
+#include <Geode/ui/GeodeUI.hpp>
 #include "WeeklyPopup.hpp"
 #include "TSLListLayer.hpp"
 
 using namespace geode::prelude;
 using namespace std::chrono;
+
 namespace tsl {
     enum StaffRole {
         Owner = 0,
@@ -16,7 +18,7 @@ namespace tsl {
         Other = 4
     };
 
-    const std::unordered_map<StaffRole, std::string> roleColors = {
+    inline const std::unordered_map<StaffRole, std::string> roleColors = {
         {StaffRole::Owner, "r"},
         {StaffRole::Dev, "g"},
         {StaffRole::Admin, "y"},
@@ -24,7 +26,7 @@ namespace tsl {
         {StaffRole::Other, "b"}
     };
 
-    const std::unordered_map<StaffRole, std::string> roleStrings = {
+    inline const std::unordered_map<StaffRole, std::string> roleStrings = {
         {StaffRole::Owner, "Owner"},
         {StaffRole::Dev, "Developer"},
         {StaffRole::Admin, "Admin"},
@@ -85,6 +87,20 @@ namespace tsl {
         bool weekly = false;
         bool staffInfo = true;
         StaffTeam* staff = StaffTeam::create();
+        CCNode* icon = geode::createModLogo(Mod::get());
+        CCNode* iconSmall = CCSprite::createWithSpriteFrameName("GJ_moonsIcon_001.png");
+    };
+
+    class ListRegistry {
+    public:
+        static std::vector<List*>& getRegisteredLists() {
+            static std::vector<List*> s_registeredLists;
+            return s_registeredLists;
+        }
+
+        static void registerList(List* list) {
+            getRegisteredLists().push_back(list);
+        }
     };
 
     class List {
@@ -98,17 +114,15 @@ namespace tsl {
     public:
         ListSettings* m_settings;
 
-        static inline std::vector<List*> s_registeredLists;
-
         static List* create(ListSettings* settings) {
             List* list = new List();
             list->m_settings = settings;
-            s_registeredLists.push_back(list);
+            ListRegistry::registerList(list);
             return list;
         }
 
         static const std::vector<List*>& getRegisteredLists() {
-            return s_registeredLists;
+            return ListRegistry::getRegisteredLists();
         }
 
         const std::string& getName() const {
@@ -399,13 +413,11 @@ namespace tsl {
             int levelsPerPage = list->m_settings->levelsPerPage;
             log::info("getLevelsString called. Page: {}", page);
 
-            // Log the size of the level names in Cache
             log::info("list->getLevelNames() size: {}", list->getLevelNames().size());
 
             for (int i = page * levelsPerPage; i <= page * levelsPerPage + levelsPerPage - 1; i++) {
                 log::info("Processing index: {}", i);
                 
-                // Check if the index is within the valid range
                 if (i >= list->getLevelNames().size()) {
                     log::warn("Index {} is out of range. Skipping.", i);
                     continue;
@@ -414,17 +426,14 @@ namespace tsl {
                 std::string name = list->getLevelNames()[i];
                 log::info("Level name at index {}: {}", i, name);
 
-                // Fetch the level ID
                 int id = list->getLevelId(i);
                 log::info("Level ID at index {}: {}", i, id);
 
-                // Check if the ID is valid
                 if (id == 0) {
                     log::error("Failed to find level ID for index {}. ID is 0. Returning empty string.", i);
                     return "";
                 }
 
-                // Add ID to the result string
                 str += std::to_string(id) + (i == page * levelsPerPage + levelsPerPage - 1 ? "" : ",");
                 log::info("Current result string: {}", str);
             }

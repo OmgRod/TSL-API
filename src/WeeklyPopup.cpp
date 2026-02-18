@@ -162,7 +162,7 @@ void WeeklyPopup::loadLevel() {
     }
 }
 
-void WeeklyPopup::loadLevelsFinished(cocos2d::CCArray* levels, char const*, int) {
+void WeeklyPopup::loadLevelsFinished(CCArray* levels, char const*, int) {
     if (!m_loadingCircle) return;
     
     if (levels->count() < 1) {

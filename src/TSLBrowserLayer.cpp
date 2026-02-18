@@ -6,30 +6,53 @@ bool TSLBrowserLayer::init() {
     setKeyboardEnabled(true);
     setKeypadEnabled(true);
 
-    auto director = CCDirector::sharedDirector();
-    auto winSize = director->getWinSize();
+    CCDirector* director = CCDirector::sharedDirector();
+    CCSize winSize = director->getWinSize();
 
-    auto background = createLayerBG();
+    CCSprite* background = createLayerBG();
     background->setColor({ 50, 50, 50 });
     addChild(background);
 
-    auto menu = CCMenu::create();
-    menu->setPosition({ 0.f, 0.f });
-    addChild(menu);
+    CCMenu* backMenu = CCMenu::create();
+    backMenu->setPosition({ 0.f, 0.f });
+    backMenu->setID("back-menu");
+    addChild(backMenu);
 
-    auto backBtn = addBackButton(
+    CCMenuItemSpriteExtra* backBtn = addBackButton(
         CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png"),
         BackButtonStyle::Green
     );
-    backBtn->setPosition({ 40.f, winSize.height - 40.f });
-    menu->addChild(backBtn);
+    backBtn->setPosition({ 24.f, winSize.height - 24.f });
+    backMenu->addChild(backBtn);
 
-    auto logo = CCSprite::create("listsLogo.png"_spr);
+    CCSprite* logo = CCSprite::create("listsLogo.png"_spr);
     logo->setPosition({ winSize.width / 2, winSize.height * 0.9f });
     addChild(logo);
 
-    auto lists = tsl::List::getRegisteredLists();
+    ScrollLayer* scroll = ScrollLayer::create({ winSize.width * 0.8f, winSize.height * 0.7f });
+    scroll->setPositionX((winSize.width - scroll->getContentSize().width) * 0.5f);
+    CCContentLayer* sContents = scroll->m_contentLayer;
+    SimpleAxisLayout* layout = SimpleAxisLayout::create(Axis::Row);
+    layout->setGap(5.f);
+    layout->setMainAxisAlignment(MainAxisAlignment::Center);
+    sContents->setLayout(layout);
+    
+    std::vector<tsl::List*> lists = tsl::ListRegistry::getRegisteredLists();
+    
+    for (tsl::List* list : lists) {
+        CCMenu* container = CCMenu::create();
+        container->setContentSize({ sContents->getContentSize().width * 0.3f, sContents->getContentSize().height * 0.75f });
+        
+        CCScale9Sprite* bg = CCScale9Sprite::create("GJ_square02.png");
+        bg->setContentSize(container->getContentSize());
+        container->addChild(bg);
+        
+        sContents->addChild(container);
+    }
 
+    sContents->updateLayout();
+    addChild(scroll);
+    
     return true;
 }
 
@@ -45,7 +68,7 @@ TSLBrowserLayer* TSLBrowserLayer::create() {
 }
 
 CCScene* TSLBrowserLayer::scene() {
-    auto scene = CCScene::create();
+    CCScene* scene = CCScene::create();
     scene->addChild(TSLBrowserLayer::create());
     return scene;
 }

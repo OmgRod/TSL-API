@@ -3,8 +3,8 @@
 bool DoubleArrow::init(bool flipped, const char* texture) {
     if(!CCNode::init()) return false;
 
-    this->setContentSize({50,50});
-    this->setScale(.4f);
+    setContentSize({50,50});
+    setScale(.4f);
 
     m_flipped = flipped;
     changeTexture(texture);
@@ -41,8 +41,8 @@ void DoubleArrow::changeTexture(const char* texture) {
     m_secondArrow->setZOrder(m_flipped ? -1 : 1);
     m_secondArrow->setID("second-arrow"_spr);
 
-    this->addChild(m_firstArrow);
-    this->addChild(m_secondArrow);
+    addChild(m_firstArrow);
+    addChild(m_secondArrow);
 }
 
 void DoubleArrow::usePopupTexture(bool shouldUse) {

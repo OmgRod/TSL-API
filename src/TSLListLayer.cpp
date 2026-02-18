@@ -11,13 +11,13 @@ bool TSLListLayer::init(tsl::List* list) {
     list->setLayer(this);
 
     setKeypadEnabled(true);
-    cocos::handleTouchPriority(this, true);
+    handleTouchPriority(this, true);
 
     CCSprite* backgroundSprite = CCSprite::create("GJ_gradientBG.png");
     backgroundSprite->setID("background");
     
-    cocos2d::CCSize winSize = CCDirector::sharedDirector()->getWinSize();
-    cocos2d::CCSize size = backgroundSprite->getContentSize();
+    CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+    CCSize size = backgroundSprite->getContentSize();
     backgroundSprite->setScaleX(winSize.width / size.width);
     backgroundSprite->setScaleY(winSize.height / size.height);
     
@@ -245,7 +245,7 @@ void TSLListLayer::goToPage(int page) {
     }
 }
 
-void TSLListLayer::showPage(cocos2d::CCArray* levels) {
+void TSLListLayer::showPage(CCArray* levels) {
     auto levelsArray = typeinfo_cast<CCArray*>(levels);
     if (levelsArray && levelsArray->count() > 0) {
         m_customListView = CustomListView::create(levels, BoomListType::Level, 220.0, 356.0);
@@ -332,7 +332,7 @@ void TSLListLayer::loadPage(const std::string& str) {
     glm->getOnlineLevels(GJSearchObject::create(SearchType::Type19, str));
 }
 
-void TSLListLayer::loadLevelsFinished(cocos2d::CCArray* levels, char const*, int) {
+void TSLListLayer::loadLevelsFinished(CCArray* levels, char const*, int) {
     m_listData->setCachedPage(m_currentPage, levels);
     showPage(levels);
 }
