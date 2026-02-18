@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
+#include <Geode/utils/web.hpp>
 #include "WeeklyPopup.hpp"
 #include "TSLListLayer.hpp"
 
@@ -258,27 +259,31 @@ namespace tsl {
             auto req = web::WebRequest();
             req.header("Content-Type", "application/json");
 
-            req.get(fmt::format("{}{}", list->m_settings->endpoint, "_WEEKLY")).listen([shouldUpdate, list](web::WebResponse* e) {
-                auto res = e->string();
+            static async::TaskHolder<web::WebResponse> holder;
+            holder.spawn(
+                req.get(fmt::format("{}{}", list->m_settings->endpoint, "_WEEKLY")),
+                [shouldUpdate, list](web::WebResponse e) {
+                    auto res = e.string();
 
-                if (res.isErr())
-                    return log::error("1. Failed to load weekly: {}", res.unwrapErr());
+                    if (res.isErr())
+                        return log::error("1. Failed to load weekly: {}", res.unwrapErr());
 
-                int id = utils::numFromString<int>(res.unwrapOr("0")).unwrapOr(0);
+                    int id = utils::numFromString<int>(res.unwrapOr("0")).unwrapOr(0);
 
-                if (id == 0)
-                    return log::error("2. Failed to load weekly.");
+                    if (id == 0)
+                        return log::error("2. Failed to load weekly.");
 
-                list->setCurrentWeekly(id);
+                    list->setCurrentWeekly(id);
 
-                if (list->getLocalWeekly() == 0) list->setLocalWeekly(id);
+                    if (list->getLocalWeekly() == 0) list->setLocalWeekly(id);
 
-                if (shouldUpdate && id != 0) {
-                    CCScene* scene = CCDirector::sharedDirector()->getRunningScene();
-                    if (WeeklyPopup* popup = scene->getChildByType<WeeklyPopup>(0))
-                        popup->loadLevel();
+                    if (shouldUpdate && id != 0) {
+                        CCScene* scene = CCDirector::sharedDirector()->getRunningScene();
+                        if (WeeklyPopup* popup = scene->getChildByType<WeeklyPopup>(0))
+                            popup->loadLevel();
+                    }
                 }
-            });
+            );
         }
 
         void loadPage(int page, tsl::List* list) {
@@ -293,36 +298,39 @@ namespace tsl {
                 return loadPageLevels(page, list);
 
             auto req = web::WebRequest();
-
             req.header("Content-Type", "application/json");
 
-            req.get(fmt::format("{}{}.json", list->m_settings->endpoint, "_list")).listen([&] (web::WebResponse* e) {
-                auto res = e->json();
-                TSLListLayer* layer = list->getLayer();
+            static async::TaskHolder<web::WebResponse> holder;
+            holder.spawn(
+                req.get(fmt::format("{}{}.json", list->m_settings->endpoint, "_list")),
+                [&, shouldLoadLevels, page, list](web::WebResponse e) {
+                    auto res = e.json();
+                    TSLListLayer* layer = list->getLayer();
 
-                if (res.isErr()) {
-                    return log::error("1. Failed to load level names: {}", res.unwrapErr());
+                    if (res.isErr()) {
+                        return log::error("1. Failed to load level names: {}", res.unwrapErr());
+                    }
+
+                    auto json = res.unwrap().asArray();
+
+                    if (json.isErr()) {
+                        return log::error("2. Failed to load level names: {}", json.unwrapErr());
+                    }
+
+                    std::vector<std::string> names;
+                    std::vector<std::string> realnames;
+
+                    for (auto& value : json.unwrap()) {
+                        std::string name = value.asString().unwrapOr("");
+                        if (name.empty()) continue;
+                        names.push_back(name);
+                    }
+
+                    list->setLevelNames(names);
+
+                    if (shouldLoadLevels) loadPageLevels(page, list);
                 }
-
-                auto json = res.unwrap().asArray();
-
-                if (json.isErr()) {
-                    return log::error("2. Failed to load level names: {}", json.unwrapErr());
-                }
-
-                std::vector<std::string> names;
-                std::vector<std::string> realnames;
-
-                for (auto& value : json.unwrap()) {
-                    std::string name = value.asString().unwrapOr("");
-                    if (name.empty()) continue;
-                    names.push_back(name);
-                }
-
-                list->setLevelNames(names);
-
-                if (shouldLoadLevels) loadPageLevels(page, list);
-            });
+            );
         }
 
         void loadPageLevels(int page, tsl::List* list) {
@@ -354,33 +362,36 @@ namespace tsl {
 
                 replace(name, ' ', "%20");
 
-                req.get(fmt::format("{}{}.json", list->m_settings->endpoint, name)).listen([&](web::WebResponse* e) {
-                    auto res = e->json();
-                    TSLListLayer* layer = list->getLayer();
+                static async::TaskHolder<web::WebResponse> holder;
+                holder.spawn(
+                    req.get(fmt::format("{}{}.json", list->m_settings->endpoint, name)),
+                    [&, i, page, list](web::WebResponse e) {
+                        auto res = e.json();
+                        TSLListLayer* layer = list->getLayer();
 
-                    if (res.isErr()) {
-                        if (layer) layer->showError();
+                        if (res.isErr()) {
+                            if (layer) layer->showError();
 
-                        return log::error("1. Failed to load page levels: {}", res.unwrapErr());
+                            return log::error("1. Failed to load page levels: {}", res.unwrapErr());
+                        }
+
+                        auto json = res.unwrap();
+
+                        int id = json["id"].asInt().unwrapOr(0);
+
+                        if (id == 0) {
+                            if (layer) layer->showError();
+
+                            return log::error("2. Failed to load page levels: {}", res.unwrapErr());
+                        }
+
+                        list->addCount();
+                        list->setLevelId(i, id);
+
+                        if (list->getCount() >= levelsPerPage && layer)
+                            layer->loadPage(getLevelsString(page, list));
                     }
-
-                    auto json = res.unwrap();
-
-                    int id = json["id"].asInt().unwrapOr(0);
-
-                    if (id == 0) {
-                        if (layer) layer->showError();
-
-                        return log::error("2. Failed to load page levels: {}", res.unwrapErr());
-                    }
-
-                    list->addCount();
-                    list->setLevelId(i, id);
-
-                    if (list->getCount() >= levelsPerPage && layer)
-                        layer->loadPage(getLevelsString(page, list));
-                    
-                });
+                );
             }
         }
 

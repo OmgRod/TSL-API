@@ -16,7 +16,7 @@ public:
     WeeklyCell(char const* p0, float p1, float p2) : LevelCell(p0, p1, p2) {}
 };
 
-class WeeklyPopup : public geode::Popup<tsl::List*>, public LevelManagerDelegate {
+class WeeklyPopup : public geode::Popup, public LevelManagerDelegate {
 public:
     tsl::List* m_list;
     static WeeklyPopup* create(tsl::List* list);
@@ -32,7 +32,7 @@ private:
     bool m_isLoading = true;
     bool m_isError = false;
     ~WeeklyPopup();
-    bool setup(tsl::List* list) override;
+    bool init(tsl::List* list);
     void showLevel(GJGameLevel* level);
     void showLoading();
     void hideLoading();

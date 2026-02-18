@@ -2,7 +2,8 @@
 
 InfoPopup* InfoPopup::create(tsl::List* list) {
     InfoPopup* ret = new InfoPopup();
-    if (ret->initAnchored(270, 250, list, "square01_001.png", CCRectZero)) {
+    ret->m_bgSprite = NineSlice::create("square01_001.png");
+    if (ret->init(list)) {
         ret->autorelease();
         return ret;
     }
@@ -11,7 +12,9 @@ InfoPopup* InfoPopup::create(tsl::List* list) {
     return nullptr;
 }
 
-bool InfoPopup::setup(tsl::List* list) {
+bool InfoPopup::init(tsl::List* list) {
+    if (!Popup::init(270, 250)) return false;
+
     setTitle("Staff Team");
     m_closeBtn->setVisible(false);
 
