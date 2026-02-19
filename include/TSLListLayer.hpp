@@ -1,7 +1,8 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
-#include "TSL.hpp"
+
+namespace tsl { class List; }
 
 using namespace geode::prelude;
 

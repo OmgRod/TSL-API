@@ -1,4 +1,7 @@
+#include <TSL.hpp>
 #include "TSLBrowserLayer.hpp"
+#include "TSLTile.hpp"
+#include "Geode/ui/Layout.hpp"
 
 bool TSLBrowserLayer::init() {
     if (!CCLayer::init()) return false;
@@ -32,27 +35,37 @@ bool TSLBrowserLayer::init() {
     ScrollLayer* scroll = ScrollLayer::create({ winSize.width * 0.8f, winSize.height * 0.7f });
     scroll->setPositionX((winSize.width - scroll->getContentSize().width) * 0.5f);
     CCContentLayer* sContents = scroll->m_contentLayer;
-    SimpleAxisLayout* layout = SimpleAxisLayout::create(Axis::Row);
+    AxisLayout* layout = AxisLayout::create(Axis::Row);
     layout->setGap(5.f);
-    layout->setMainAxisAlignment(MainAxisAlignment::Center);
+    layout->setDefaultScaleLimits(1.f, 1.f);
+    layout->setAxisAlignment(AxisAlignment::Center);
     sContents->setLayout(layout);
     
-    std::vector<tsl::List*> lists = tsl::ListRegistry::getRegisteredLists();
-    
+    tsl::ListRegistry reg;
+    std::vector<tsl::List*> lists = reg.getRegisteredLists();
+
+    log::info("[TSLBrowserLayer] Number of registered lists: {}", lists.size());
+    int idx = 0;
     for (tsl::List* list : lists) {
-        CCMenu* container = CCMenu::create();
-        container->setContentSize({ sContents->getContentSize().width * 0.3f, sContents->getContentSize().height * 0.75f });
-        
-        CCScale9Sprite* bg = CCScale9Sprite::create("GJ_square02.png");
-        bg->setContentSize(container->getContentSize());
-        container->addChild(bg);
-        
-        sContents->addChild(container);
+        if (!list) {
+            log::warn("[TSLBrowserLayer] List pointer at index {} is null!", idx);
+            ++idx;
+            continue;
+        }
+        log::info("[TSLBrowserLayer] List {} pointer: {} name: {}", idx, fmt::ptr(list), list->getName());
+        auto container = TSLTile::create(list, scroll->getContentSize());
+        if (!container) {
+            log::warn("[TSLBrowserLayer] TSLTile::create returned null for list {}!", idx);
+        } else {
+            log::info("[TSLBrowserLayer] Created tile for list {} ({}), adding to content layer.", idx, list->getName());
+            sContents->addChild(container);
+        }
+        ++idx;
     }
 
     sContents->updateLayout();
     addChild(scroll);
-    
+
     return true;
 }
 

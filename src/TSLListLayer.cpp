@@ -11,7 +11,7 @@ bool TSLListLayer::init(tsl::List* list) {
     list->setLayer(this);
 
     setKeypadEnabled(true);
-    handleTouchPriority(this, true);
+    handleTouchPriority(static_cast<CCNode*>(this), true);
 
     CCSprite* backgroundSprite = CCSprite::create("GJ_gradientBG.png");
     backgroundSprite->setID("background");
@@ -24,17 +24,17 @@ bool TSLListLayer::init(tsl::List* list) {
     backgroundSprite->setAnchorPoint({0, 0});
     backgroundSprite->setColor({100, 100, 100});
     backgroundSprite->setZOrder(-1);
-    addChild(backgroundSprite); 
+    this->addChild(backgroundSprite); 
 
     CCMenu* menu = CCMenu::create();
     menu->setPosition({0, 0});
     menu->setAnchorPoint({ 0.f, 0.f });
-    addChild(menu);
+    this->addChild(menu);
 
     CCSprite* spr = CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
     CCMenuItemSpriteExtra* button = CCMenuItemSpriteExtra::create(
         spr,
-        this,
+        static_cast<CCObject*>(this),
         menu_selector(TSLListLayer::onBack)
     );
     button->setPosition({25, winSize.height - 25});
@@ -44,13 +44,12 @@ bool TSLListLayer::init(tsl::List* list) {
     CCSprite* bottomLeft = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
     bottomLeft->setPosition({-1,-1});
     bottomLeft->setAnchorPoint({0,0});
-    addChild(bottomLeft, -1);
+    this->addChild(bottomLeft, -1);
 
     CCSprite* bottomRight = CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png");
     bottomRight->setPosition({winSize.width + 1, -1});
     bottomRight->setAnchorPoint({1,0});
-    bottomRight->setFlipX(true);
-    addChild(bottomRight, -1);
+    this->addChild(bottomRight, -1);
     
     m_loadingCircle = LoadingCircle::create();
     m_loadingCircle->setParentLayer(this);
@@ -62,11 +61,11 @@ bool TSLListLayer::init(tsl::List* list) {
     m_errorLabel->setVisible(false);
     m_errorLabel->setOpacity(125);
     m_errorLabel->setScale(0.73f);
-    addChild(m_errorLabel, 2);
+    this->addChild(m_errorLabel, 2);
 
     spr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
     m_refreshButton = CCMenuItemSpriteExtra::create(spr,
-        this,
+        static_cast<CCObject*>(this),
         menu_selector(TSLListLayer::onRefresh)
     );
     m_refreshButton->setCascadeOpacityEnabled(true);
@@ -79,7 +78,7 @@ bool TSLListLayer::init(tsl::List* list) {
 
     m_nextButton = CCMenuItemSpriteExtra::create(
         spr,
-        this,
+        static_cast<CCObject*>(this),
         menu_selector(TSLListLayer::onNext)
     );
     m_nextButton->setCascadeOpacityEnabled(true);
@@ -91,7 +90,7 @@ bool TSLListLayer::init(tsl::List* list) {
 
     m_prevButton = CCMenuItemSpriteExtra::create(
         spr,
-        this,
+        static_cast<CCObject*>(this),
         menu_selector(TSLListLayer::onPrev)
     );
     m_prevButton->setCascadeOpacityEnabled(true);
@@ -116,11 +115,11 @@ bool TSLListLayer::init(tsl::List* list) {
     m_pageLabel->setPosition({winSize.width - 2.f, winSize.height - 2.f});
     m_pageLabel->setAnchorPoint({1.f, 1.f});
     m_pageLabel->setScale(0.56f);
-    addChild(m_pageLabel);
+    this->addChild(m_pageLabel);
 
     m_list = GJListLayer::create(nullptr, m_listData->m_settings->name.c_str(), {191, 114, 62, 255}, 356.f, 220.f, 0);
     m_list->setPosition(winSize / 2 - m_list->getScaledContentSize() / 2 - CCPoint(0,5));
-    addChild(m_list);
+    this->addChild(m_list);
 
     spr = CCSprite::create("GJ_button_02.png");
     spr->setScale(0.7f);
@@ -131,7 +130,7 @@ bool TSLListLayer::init(tsl::List* list) {
 
     CCMenuItemSpriteExtra* goToPageButton = CCMenuItemSpriteExtra::create(
         spr,
-        this,
+        static_cast<CCObject*>(this),
         menu_selector(TSLListLayer::onGoToPage)
     );
     goToPageButton->setPosition({winSize.width - 21, winSize.height - 41});
@@ -140,7 +139,7 @@ bool TSLListLayer::init(tsl::List* list) {
 
     CCMenuItemSpriteExtra* lastPageButton = CCMenuItemSpriteExtra::create(
         DoubleArrow::create(true, "GJ_arrow_03_001.png"),
-        this,
+        static_cast<CCObject*>(this),
         menu_selector(TSLListLayer::onLastPage)
     );
     lastPageButton->setPosition({winSize.width - 21, winSize.height - 74});
@@ -149,7 +148,7 @@ bool TSLListLayer::init(tsl::List* list) {
 
     CCMenuItemSpriteExtra* firstPageButton = CCMenuItemSpriteExtra::create(
         DoubleArrow::create(false, "GJ_arrow_03_001.png"),
-        this,
+        static_cast<CCObject*>(this),
         menu_selector(TSLListLayer::onFirstPage)
     );
     firstPageButton->setPosition({21.f, winSize.height - 74});
@@ -240,8 +239,7 @@ void TSLListLayer::goToPage(int page) {
     if (CCArray* cachedPage = m_listData->getCachedPage(page)) {
         showPage(cachedPage);
     } else {
-        tsl::Request req;
-        req.loadPage(page, m_listData);
+        log::error("Page loading not implemented");
     }
 }
 
