@@ -12,4 +12,10 @@ public:
     static CCScene* scene();
     void keyBackClicked();
     void onBack(CCObject*);
+    void reloadTiles();
+    void onRefresh(CCObject*);
+private:
+    CCContentLayer* m_sContents = nullptr;
+    ScrollLayer* m_scroll = nullptr;
+    CCMenu* m_topMenu = nullptr;
 };

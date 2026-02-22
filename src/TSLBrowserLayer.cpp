@@ -32,41 +32,53 @@ bool TSLBrowserLayer::init() {
     logo->setPosition({ winSize.width / 2, winSize.height * 0.9f });
     addChild(logo);
 
-    ScrollLayer* scroll = ScrollLayer::create({ winSize.width * 0.8f, winSize.height * 0.7f });
-    scroll->setPositionX((winSize.width - scroll->getContentSize().width) * 0.5f);
-    CCContentLayer* sContents = scroll->m_contentLayer;
+    m_scroll = ScrollLayer::create({ winSize.width * 0.8f, winSize.height * 0.7f });
+    m_scroll->setPositionX((winSize.width - m_scroll->getContentSize().width) * 0.5f);
+    m_sContents = m_scroll->m_contentLayer;
     AxisLayout* layout = AxisLayout::create(Axis::Row);
     layout->setGap(5.f);
     layout->setDefaultScaleLimits(1.f, 1.f);
     layout->setAxisAlignment(AxisAlignment::Center);
-    sContents->setLayout(layout);
-    
-    tsl::ListRegistry reg;
-    std::vector<tsl::List*> lists = reg.getRegisteredLists();
+    m_sContents->setLayout(layout);
 
-    log::info("[TSLBrowserLayer] Number of registered lists: {}", lists.size());
+    m_topMenu = CCMenu::create();
+    m_topMenu->setPosition({winSize.width - 50.f, winSize.height - 50.f});
+    addChild(m_topMenu);
+    auto refreshBtnSprite = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
+    auto refreshBtn = CCMenuItemSpriteExtra::create(refreshBtnSprite, this, menu_selector(TSLBrowserLayer::onRefresh));
+    m_topMenu->addChild(refreshBtn);
+
+    addChild(m_scroll);
+    reloadTiles();
+    return true;
+}
+
+void TSLBrowserLayer::reloadTiles() {
+    m_sContents->removeAllChildren();
+    std::vector<tsl::List*> lists = tsl::ListRegistry::getRegisteredLists();
+    log::info("Number of registered lists: {}", lists.size());
     int idx = 0;
     for (tsl::List* list : lists) {
         if (!list) {
-            log::warn("[TSLBrowserLayer] List pointer at index {} is null!", idx);
+            log::warn("List pointer at index {} is null!", idx);
             ++idx;
             continue;
         }
-        log::info("[TSLBrowserLayer] List {} pointer: {} name: {}", idx, fmt::ptr(list), list->getName());
-        auto container = TSLTile::create(list, scroll->getContentSize());
+        log::info("List {} pointer: {} name: {}", idx, fmt::ptr(list), list->getName());
+        auto container = TSLTile::create(list, m_scroll->getContentSize());
         if (!container) {
-            log::warn("[TSLBrowserLayer] TSLTile::create returned null for list {}!", idx);
+            log::warn("TSLTile::create returned null for list {}!", idx);
         } else {
-            log::info("[TSLBrowserLayer] Created tile for list {} ({}), adding to content layer.", idx, list->getName());
-            sContents->addChild(container);
+            log::info("Created tile for list {} ({}), adding to content layer.", idx, list->getName());
+            m_sContents->addChild(container);
         }
         ++idx;
     }
+    m_sContents->updateLayout();
+}
 
-    sContents->updateLayout();
-    addChild(scroll);
-
-    return true;
+void TSLBrowserLayer::onRefresh(CCObject*) {
+    reloadTiles();
 }
 
 TSLBrowserLayer* TSLBrowserLayer::create() {
